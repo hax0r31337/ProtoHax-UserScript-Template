@@ -1,0 +1,8 @@
+node_modules/
+dist/
+
+# Local editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

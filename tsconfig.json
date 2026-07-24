@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM"],
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // swc transpiles file-by-file: every file must be independently
+    // transformable, and type-only imports must be written as `import type`.
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+
+    // Rollup emits the bundle; tsc is only ever run as a type checker.
+    "noEmit": true,
+
+    // Required: the published declarations vendor the host's packet definitions
+    // verbatim, which contain a harmless duplicate declaration. Your own code is
+    // still fully type-checked.
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}
