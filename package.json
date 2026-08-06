@@ -1,6 +1,6 @@
 {
   "name": "protohax-userscript-template",
-  "version": "0.2.1",
+  "version": "0.1.0",
   "private": true,
   "description": "Template for writing ProtoHax client modules in TypeScript.",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "check": "tsc --noEmit"
   },
   "devDependencies": {
-    "@protohax/userscript": "^0.2.1",
+    "@protohax/userscript": "^0.4.0",
     "@rollup/plugin-commonjs": "^29.0.3",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-swc": "^0.4.1",
