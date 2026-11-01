@@ -1,15 +1,14 @@
 // Copies the built bundle into the ProtoHax scripts folder, where the client
-// picks it up on startup.
+// loads it on startup.
 //
-// Destination resolution, in order:
-//   1. PROTOHAX_SCRIPTS_DIR   — explicit path, any platform. Always wins.
-//   2. --adb / PROTOHAX_ADB=1 — `adb push` to a connected Android device
-//                               (override the on-device path with
-//                               PROTOHAX_ANDROID_DIR).
-//   3. Windows                — %APPDATA%\ProtoHax\scripts
+// Where it goes:
+//   1. --adb or PROTOHAX_ADB=1: `adb push` to a connected Android device.
+//      Set PROTOHAX_ANDROID_DIR to change the path on the device.
+//   2. PROTOHAX_SCRIPTS_DIR: this folder, on any platform.
+//   3. Windows: %APPDATA%\ProtoHax\scripts
 //
-// Run standalone with `node scripts/deploy.mjs [--adb]`, or as part of a build
-// with `npm run deploy` / `npm run dev`.
+// Run it on its own with `node scripts/deploy.mjs [--adb]`, or as part of a
+// build with `npm run deploy` / `npm run dev`.
 
 import { copyFileSync, mkdirSync } from "node:fs";
 import { spawnSync } from "node:child_process";

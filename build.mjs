@@ -1,12 +1,12 @@
 // Builds the script into the single ES module the ProtoHax client loads, and
-// optionally installs it.
+// can install it for you.
 //
-//   node build.mjs                    one-shot build
+//   node build.mjs                    build once
 //   node build.mjs --watch            rebuild on every change
 //   node build.mjs --deploy           build, then copy into the client's scripts folder
-//   node build.mjs --watch --deploy   rebuild + copy on every change
+//   node build.mjs --watch --deploy   rebuild and copy on every change
 //
-// The bundling itself lives in rollup.config.mjs.
+// The bundle itself is configured in rollup.config.mjs.
 
 import path from "node:path";
 import { mkdirSync } from "node:fs";
@@ -33,8 +33,8 @@ function afterBuild() {
         const dest = deploy(outFile, { adb: useAdb });
         console.log(`[deploy] ${path.basename(outFile)} -> ${dest}`);
     } catch (error) {
-        // In watch mode a bad destination shouldn't kill the loop — the next
-        // rebuild retries, which is what you want after plugging a device in.
+        // Don't stop watching on a deploy error. The next rebuild retries,
+        // which is handy if you just forgot to plug in a device.
         console.error(`[deploy] ${error.message}`);
         if (!watch) process.exitCode = 1;
     }
@@ -46,8 +46,8 @@ if (watch) {
     watcher.on("event", (event) => {
         switch (event.code) {
             case "BUNDLE_END":
-                // The bundle is written for us here; the result still has to be
-                // closed to release its file handles.
+                // Rollup has already written the bundle, but we still need to
+                // close the result to release its file handles.
                 event.result.close();
                 console.log(`[build] built in ${event.duration}ms`);
                 afterBuild();

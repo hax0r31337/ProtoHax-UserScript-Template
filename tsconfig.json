@@ -10,17 +10,25 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
 
-    // swc transpiles file-by-file: every file must be independently
-    // transformable, and type-only imports must be written as `import type`.
+    // swc compiles one file at a time, so each file must stand on its own and
+    // type-only imports must use `import type`.
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
 
-    // Rollup emits the bundle; tsc is only ever run as a type checker.
+    // Classic JSX runtime, matching rollup.config.mjs: elements compile to
+    // `h(...)` from the client's `preact`, so import `h` (and `Fragment` for
+    // `<>...</>`) in every .tsx file. The automatic runtime would import
+    // `preact/jsx-runtime`, which the client doesn't ship.
+    "jsx": "react",
+    "jsxFactory": "h",
+    "jsxFragmentFactory": "Fragment",
+
+    // Rollup writes the bundle. tsc is only used for type checking.
     "noEmit": true,
 
-    // Required: the published declarations vendor the host's packet definitions
-    // verbatim, which contain a harmless duplicate declaration. Your own code is
-    // still fully type-checked.
+    // Required: @protohax/userscript includes the client's packet definitions
+    // as-is, and they contain a harmless duplicate declaration. Your own code
+    // is still fully type-checked.
     "skipLibCheck": true
   },
   "include": ["src"]

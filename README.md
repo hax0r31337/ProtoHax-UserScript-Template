@@ -1,16 +1,17 @@
 # ProtoHax UserScript Template
 
-**A starting point for writing [ProtoHax](https://protohax.net/) client modules
-in TypeScript.**
+A starting point for writing [ProtoHax](https://protohax.net/) client modules in
+TypeScript.
 
-Write your modules in `src/`, run `npm run build`, and get one JavaScript file
-the client loads. Type definitions come from
+Write your modules in `src/`, run `npm run build`, and you get one JavaScript
+file the client can load. Types come from
 [`@protohax/userscript`](https://www.npmjs.com/package/@protohax/userscript), so
-your editor autocompletes the whole game model — entities, the world, inventory,
-every packet payload.
+your editor can autocomplete the whole game model: entities, the world,
+inventory and every packet payload.
 
-**Everything else — the lifecycle, the API, the build contract, where scripts
-install — is documented at [userscript.protohax.net](https://userscript.protohax.net).**
+For everything else (the module lifecycle, the API, build requirements and
+where scripts are installed), see the docs at
+[userscript.protohax.net](https://userscript.protohax.net).
 
 ## Quick start
 
@@ -19,49 +20,81 @@ npm install
 npm run build      # -> dist/my-script.js
 npm run deploy     # build, then copy into the client's scripts folder
 
-npm run dev        # rebuild + redeploy on every save
-npm run check      # type-check (the build does not)
+npm run dev        # rebuild and redeploy on every save
+npm run check      # type-check (the build doesn't)
 ```
 
-Start ProtoHax and `ChatCleaner` appears under Utility, next to the built-in
-modules. Scripts are read at startup, so restart the client after a rebuild.
+Start ProtoHax and you'll find `ChatCleaner` and `Coordinates` in the Script
+category, next to the built-in modules. The client only reads scripts at startup, so restart it after each
+rebuild.
 
 ## Layout
 
 ```
-CLAUDE.md                project brief for AI coding agents
+CLAUDE.md                instructions for AI coding agents
 script.config.mjs        output name, sourcemap, minify, banner fields
-rollup.config.mjs        the bundle: one ES module, facade left external
-build.mjs                runs it (one-shot, --watch, --deploy)
+rollup.config.mjs        bundle config: one ES module, client imports kept external, JSX
+build.mjs                runs the build (one-shot, --watch, --deploy)
 scripts/deploy.mjs       copies the bundle into the ProtoHax scripts folder
 src/
-  index.ts               entry — a worked example module to replace
+  index.ts               entry point, with an example module to replace
+  coordinates.tsx        example HUD widget written with Preact and JSX
   phaxuser.d.ts          types for `phaxuser:` imports of other scripts
 ```
 
-`src/index.ts` is the entry point; anything it imports is bundled into the same
-output file, so split it up however you like.
+`src/index.ts` is the entry point. Anything it imports ends up in the same
+output file, so you can split your code across as many files as you like.
 
 ## Writing a module
 
-Every module is one `defineModule` call at the top level of a file:
+Each module is a single `defineModule` call at the top level of a file:
 
 ```ts
-import { defineModule, ModuleCategory } from "@protohax/userscript";
+import { defineModule } from "@protohax/userscript";
 
 defineModule(
-  { name: "MyModule", category: ModuleCategory.Utility },
+  { name: "MyModule" },
   {
-    strength: { type: "number", def: 1, min: 0, max: 10, step: 0.5 },
+    speed: { type: "number", def: 1, min: 0, max: 10, step: 0.5 },
   },
   (ctx) => {
-    ctx.on("tick", () => ctx.session.entityState.localPlayer.strafe(ctx.options.strength.value, 1));
+    ctx.on("movement_tick", (state) => state.strafe(ctx.options.speed.value, 1));
   },
 );
 ```
 
-The schema declares the options (interpreted once, shared by every session);
-the setup function runs per session with the typed handles on `ctx.options`.
-`src/index.ts` ships a commented walkthrough of the same shape. For the full
-schema — nested options, drawers, modes — and everything `ctx` can do, see
+- **The schema** declares your options. It's read once and shared by every
+  session.
+- **The setup function** runs once per session, with your options typed on
+  `ctx.options`.
+
+`src/index.ts` has a commented example with the same structure. For the full
+schema (nested options, drawers, modes) and everything `ctx` can do, see
 [Getting Started](https://userscript.protohax.net/guides/getting-started).
+
+## UI with Preact and JSX
+
+The client ships its own [Preact](https://preactjs.com/) 11 and htm 3, and the
+template keeps `preact`, `preact/compat`, `@preact/compat` and `htm` external
+so your script uses those copies. The `preact` dev dependency is only there
+for the types.
+
+`.tsx` files compile with the classic JSX runtime, so every element becomes an
+`h(...)` call. Import `h` (and `Fragment` if you use `<>...</>`) in each one:
+
+```tsx
+import { h, render } from "preact";
+import { useState } from "preact/compat"; // hooks live here, not preact/hooks
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={() => setCount(count + 1)}>Clicked {count}</button>;
+}
+
+render(<Counter />, widget.root);
+```
+
+`src/coordinates.tsx` is a complete HUD widget. See
+[UI Widgets](https://userscript.protohax.net/ui) for widgets, and
+[Preact & htm](https://userscript.protohax.net/ui/setup) for how the client's
+DOM differs from a browser's.

@@ -1,10 +1,10 @@
-// `phaxuser:<path>` imports another script from the client's scripts folder —
-// `phaxuser:lib/math.js` is `<scripts>/lib/math.js`. TypeScript can't resolve
-// those on its own, so they are declared here.
+// `phaxuser:<path>` imports another script from the client's scripts folder.
+// For example, `phaxuser:lib/math.js` is `<scripts>/lib/math.js`. TypeScript
+// can't resolve these by itself, so they're declared here.
 //
-// This shorthand declaration types every `phaxuser:` import as `any`. For a
-// shared library you control, declare its shape as well — the specific
-// declaration wins over the wildcard, and you get real checking back:
+// The wildcard below types every `phaxuser:` import as `any`. For a shared
+// library you control, declare its shape too. A specific declaration takes
+// priority over the wildcard, so you get real type checking:
 //
 //     declare module "phaxuser:lib/math.js" {
 //         export function clamp(value: number, min: number, max: number): number;

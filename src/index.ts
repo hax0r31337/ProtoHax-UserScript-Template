@@ -1,40 +1,43 @@
-// Entry point — everything reachable from here ends up in the single file the
-// client loads, and each module registers itself as its file is evaluated.
+// Entry point. Everything imported from here ends up in the single file the
+// client loads, and each module registers itself when its file runs.
 //
-// The example below is a packet-level module: it drops incoming chat messages
-// containing any of a list of words. It shows the option schema (string-list/
-// enum/boolean options plus a nested child), `ctx.onPacket`, narrowing a packet
-// union, and cancelling a packet so the client never sees it.
+// The example below drops incoming chat messages that contain any word from a
+// list. It shows:
+//   - an option schema (string-list, enum and boolean options, plus a nested child)
+//   - listening to packets with `ctx.onPacket`
+//   - narrowing a packet union
+//   - cancelling a packet so the client never sees it
 
-import { defineModule, ModuleCategory } from "@protohax/userscript";
+import { defineModule } from "@protohax/userscript";
+
+// A second example, a HUD widget written with Preact and JSX. Delete the line
+// (and the file) if you don't need UI.
+import "./coordinates";
 
 defineModule(
-    {
-        name: "ChatCleaner",
-        category: ModuleCategory.Utility,
-    },
+    // Every script module goes in the client menu's Script category.
+    { name: "ChatCleaner" },
 
-    // The schema — interpreted ONCE at registration. Keys become the handle
-    // names on `ctx.options` and the display names in the menu (override a
-    // label with `name: "..."`). The handles are shared by every session, so
-    // listeners always read the current menu value.
+    // The schema is read ONCE, at registration. Each key is both the name on
+    // `ctx.options` and the label in the menu (set `name: "..."` to change the
+    // label). Options are shared by every session, so listeners always see the
+    // current menu value.
     {
         words: { type: "string-list", name: "Blocked Words", def: ["buycraft", "discord.gg"] },
         scope: { type: "enum", values: ["Chat", "Chat + Whisper"], def: "Chat" },
         log: {
             type: "boolean", name: "Log Dropped", child: {
-                // Nested options appear under their parent in the menu and hang
-                // off the parent handle: `ctx.options.log.child.prefix`.
+                // Nested options show up under their parent in the menu, and
+                // in code as `ctx.options.log.child.prefix`.
                 prefix: { type: "string", def: "[ChatCleaner]" },
             },
         },
     },
 
-    // The setup — runs ONCE PER SESSION with a fresh context; `ctx.options`
-    // carries the handles above, fully typed from the schema. Listeners wired
-    // through `ctx` are torn down with the session and only fire while the
-    // module is enabled, so no manual unsubscribing and no "am I enabled?"
-    // guards.
+    // The setup runs ONCE PER SESSION with a fresh `ctx`. `ctx.options` holds
+    // the options above, fully typed from the schema. Listeners added through
+    // `ctx` only fire while the module is enabled and are removed when the
+    // session ends, so you don't need to unsubscribe or check "am I enabled?".
     (ctx) => {
         const blocked = () =>
             ctx.options.words.value
@@ -42,8 +45,8 @@ defineModule(
                 .filter((word) => word.length > 0);
 
         ctx.onPacket("text", (packet) => {
-            // `packet` is a union discriminated by `type`; narrowing gives
-            // you the fields of that variant.
+            // `packet` is a union keyed on `type`. Checking `type` narrows it
+            // and gives you that variant's fields.
             const isWhisper = packet.type === "whisper";
             if (packet.type !== "chat" && !isWhisper) return;
             if (isWhisper && ctx.options.scope.value !== "Chat + Whisper") return;
